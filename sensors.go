@@ -50,12 +50,22 @@ type Order struct {
 	GasPrice     string    `xorm:""`
 }
 
+// TableName .
+func (table *Order) TableName() string {
+	return "eth_sensors_order"
+}
+
 // Watcher the eth event watcher managed by sensors
 type Watcher struct {
 	ID      string `xorm:"pk"`     // watcher id
 	Name    string `xorm:"index"`  // watcher name
 	Key     string `xorm:"unique"` // watcher unique key provider by notifier
 	Address string `xorm:"index"`  // watched address
+}
+
+// TableName .
+func (table *Watcher) TableName() string {
+	return "eth_sensors_watcher"
 }
 
 // Sensor The eth tx detect service
