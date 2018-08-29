@@ -191,30 +191,30 @@ func New(config config.Config, options ...Option) (Sensor, error) {
 		p.NotifierCreator = plugin.NotifierCreator
 		p.OrderCacherCreator = plugin.OrderCacherCreator
 		p.sensorsCreator = plugin.sensorsCreator
-		p.OrderCacherCreator = plugin.OrderCacherCreator
+		p.OrderStorageCreator = plugin.OrderStorageCreator
 	}
 
 	for _, option := range options {
 		option(p)
 	}
 
-	if plugin.sensorsCreator == nil {
+	if p.sensorsCreator == nil {
 		return nil, fmt.Errorf("expect import sensors implement")
 	}
 
-	if plugin.NotifierCreator == nil {
+	if p.NotifierCreator == nil {
 		return nil, fmt.Errorf("expect import notifier implement")
 	}
 
-	if plugin.OrderStorageCreator == nil {
+	if p.OrderStorageCreator == nil {
 		return nil, fmt.Errorf("expect import order storage implement")
 	}
 
-	if plugin.OrderCacherCreator == nil {
+	if p.OrderCacherCreator == nil {
 		return nil, fmt.Errorf("expect import order cacher implement")
 	}
 
-	return plugin.sensorsCreator(config, p)
+	return p.sensorsCreator(config, p)
 }
 
 // Option .
