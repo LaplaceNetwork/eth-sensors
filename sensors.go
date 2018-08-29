@@ -187,10 +187,12 @@ func New(config config.Config, options ...Option) (Sensor, error) {
 
 	p := &Plugin{}
 
-	p.NotifierCreator = plugin.NotifierCreator
-	p.OrderCacherCreator = plugin.OrderCacherCreator
-	p.sensorsCreator = plugin.sensorsCreator
-	p.OrderCacherCreator = plugin.OrderCacherCreator
+	if plugin != nil {
+		p.NotifierCreator = plugin.NotifierCreator
+		p.OrderCacherCreator = plugin.OrderCacherCreator
+		p.sensorsCreator = plugin.sensorsCreator
+		p.OrderCacherCreator = plugin.OrderCacherCreator
+	}
 
 	for _, option := range options {
 		option(p)
