@@ -183,7 +183,19 @@ func RegisterStorage(name string, cacherF OrderStorageF) {
 }
 
 // New create sensors
-func New(config config.Config) (Sensor, error) {
+func New(config config.Config, options ...Option) (Sensor, error) {
+
+	p := &Plugin{}
+
+	p.NotifierCreator = plugin.NotifierCreator
+	p.OrderCacherCreator = plugin.OrderCacherCreator
+	p.sensorsCreator = plugin.sensorsCreator
+	p.OrderCacherCreator = plugin.OrderCacherCreator
+
+	for _, option := range options {
+		option(p)
+	}
+
 	if plugin.sensorsCreator == nil {
 		return nil, fmt.Errorf("expect import sensors implement")
 	}
@@ -200,5 +212,15 @@ func New(config config.Config) (Sensor, error) {
 		return nil, fmt.Errorf("expect import order cacher implement")
 	}
 
-	return plugin.sensorsCreator(config, plugin)
+	return plugin.sensorsCreator(config, p)
+}
+
+// Option .
+type Option func(plugin *Plugin)
+
+// WithNotifier .
+func WithNotifier(notifier NotifierF) Option {
+	return func(plugin *Plugin) {
+		plugin.NotifierCreator = notifier
+	}
 }
