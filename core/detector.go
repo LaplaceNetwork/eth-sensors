@@ -226,16 +226,16 @@ func (d *sensorsImpl) TX(tx *rpc.Transaction, blockNumber int64, blockTime time.
 
 	order.GasLimits = fixed.FromBigInteger(gasLimits, 0).HexValue()
 
-	if err := d.storage.Save(order); err != nil {
-		d.ErrorF("save tx %s order err: %s", tx.Hash, err)
-		return err
-	}
-
 	for _, watcher := range watchers {
 		if err := d.notifier.Notify(watcher, order); err != nil {
 			d.ErrorF("notify tx %s order to watcher %s err: %s", tx.Hash, watcher.Key, err)
 			return err
 		}
+	}
+
+	if err := d.storage.Save(order); err != nil {
+		d.ErrorF("save tx %s order err: %s", tx.Hash, err)
+		return err
 	}
 
 	d.cacher.Pend(order)
@@ -257,6 +257,20 @@ func (d *sensorsImpl) orderRecipt(tx string) (bool, error) {
 	return true, nil
 }
 
+func (d *sensorsImpl) recache(timeout, confirmed []*sensors.Order) {
+	for _, order := range timeout {
+
+		order.Status = sensors.StatusPending
+	}
+
+	for _, order := range confirmed {
+
+		order.Status = sensors.StatusRunning
+	}
+
+	d.cacher.Cache(append(timeout, confirmed...))
+}
+
 func (d *sensorsImpl) Block(block *rpc.Block, blockNumber int64, blockTime time.Time) error {
 	timeout, confirmed := d.cacher.Confirm(blockNumber, blockTime)
 
@@ -267,11 +281,6 @@ func (d *sensorsImpl) Block(block *rpc.Block, blockNumber int64, blockTime time.
 
 		order.ConfirmBlock = blockNumber
 		order.ConfirmTime = blockTime
-
-		if err := d.storage.Update(order); err != nil {
-			d.cacher.Cache(append(timeout, confirmed...))
-			return err
-		}
 	}
 
 	for _, order := range confirmed {
@@ -279,7 +288,7 @@ func (d *sensorsImpl) Block(block *rpc.Block, blockNumber int64, blockTime time.
 		ok, err := d.orderRecipt(order.TX)
 
 		if err != nil {
-			d.cacher.Cache(append(timeout, confirmed...))
+			d.recache(timeout, confirmed)
 			return err
 		}
 
@@ -291,11 +300,6 @@ func (d *sensorsImpl) Block(block *rpc.Block, blockNumber int64, blockTime time.
 
 		order.ConfirmBlock = blockNumber
 		order.ConfirmTime = blockTime
-
-		if err := d.storage.Update(order); err != nil {
-			d.cacher.Cache(append(timeout, confirmed...))
-			return err
-		}
 	}
 
 	orders := append(timeout, confirmed...)
@@ -305,16 +309,24 @@ func (d *sensorsImpl) Block(block *rpc.Block, blockNumber int64, blockTime time.
 
 		if err != nil {
 			d.ErrorF("notify tx %s completed err: %s", order.TX, err)
-			d.cacher.Cache(append(timeout, confirmed...))
+			d.recache(timeout, confirmed)
 			return err
 		}
 
 		for _, watcher := range watchers {
 			if err := d.notifier.Notify(watcher, order); err != nil {
 				d.ErrorF("notify tx %s completed err: %s", order.TX, err)
-				d.cacher.Cache(append(timeout, confirmed...))
+				d.recache(timeout, confirmed)
 				return err
 			}
+		}
+	}
+
+	for _, order := range orders {
+		if err := d.storage.Update(order); err != nil {
+			d.ErrorF("save order %s err: %s", order.TX, err)
+			d.recache(timeout, confirmed)
+			return err
 		}
 	}
 

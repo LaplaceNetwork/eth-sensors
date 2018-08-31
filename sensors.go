@@ -23,17 +23,18 @@ type Status string
 
 // Status .
 var (
-	StatusCreated = Status("CREATED")
-	StatusPending = Status("PENDING")
-	StatusRunning = Status("RUNNING")
-	StatusSucceed = Status("SUCCEED")
-	StatusFailed  = Status("FAILED")
+	StatusCreated  = Status("CREATED")
+	StatusPending  = Status("PENDING")
+	StatusRunning  = Status("RUNNING")
+	StatusSucceed  = Status("SUCCEED")
+	StatusFailed   = Status("FAILED")
+	StatusCanceled = Status("CANCELED")
 )
 
 // Order the eth tx order
 type Order struct {
 	ID           string    `xorm:"pk"`
-	TX           string    `xorm:"index"`
+	TX           string    `xorm:"unique"`
 	PendingBlock int64     `xorm:""`
 	CommitBlock  int64     `xorm:""`
 	ConfirmBlock int64     `xorm:""`
