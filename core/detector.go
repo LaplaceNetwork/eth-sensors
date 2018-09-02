@@ -168,30 +168,30 @@ func (d *sensorsImpl) fetchHandler(block *rpc.Block) error {
 	return nil
 }
 
-func (d *sensorsImpl) getWatchers(tx *rpc.Transaction) ([]*sensors.Watcher, error) {
+func (d *sensorsImpl) getWatchers(order *sensors.Order) ([]*sensors.Watcher, error) {
 
-	to, err := d.erc20Watcher(tx)
+	to, err := d.erc20Watcher(order)
 
 	if err != nil {
 		return nil, err
 	}
 
 	if to == "" {
-		to = tx.To
+		to = order.To
 	}
 
 	watchers := make([]*sensors.Watcher, 0)
 
-	err = d.db.Where(`"address" = ? or "address" = ?`, tx.From, to).Find(&watchers)
+	err = d.db.Where(`"address" = ? or "address" = ?`, order.From, to).Find(&watchers)
 
 	return watchers, err
 }
 
-func (d *sensorsImpl) erc20Watcher(tx *rpc.Transaction) (string, error) {
+func (d *sensorsImpl) erc20Watcher(order *sensors.Order) (string, error) {
 
 	watcher := new(sensors.Watcher)
 
-	ok, err := d.db.Where(`"address" = ? and "erc20" = ?`, tx.To, true).Get(watcher)
+	ok, err := d.db.Where(`"address" = ? and "erc20" = ?`, order.To, true).Get(watcher)
 
 	if err != nil {
 		return "", err
@@ -201,7 +201,7 @@ func (d *sensorsImpl) erc20Watcher(tx *rpc.Transaction) (string, error) {
 		return "", nil
 	}
 
-	code := strings.TrimPrefix("0x", tx.Input)
+	code := strings.TrimPrefix("0x", order.Code)
 
 	if !strings.HasPrefix(code, erc20.TransferID) {
 		d.WarnF("check contract %s call, is not a transfer call")
@@ -211,7 +211,7 @@ func (d *sensorsImpl) erc20Watcher(tx *rpc.Transaction) (string, error) {
 	code = strings.TrimPrefix(code, erc20.TransferID)
 
 	if len(code) != 128 {
-		d.WarnF("handle unknown contract transfer method: %s", tx.Hash)
+		d.WarnF("handle unknown contract transfer method: %s", order.TX)
 		return "", nil
 	}
 
@@ -219,18 +219,6 @@ func (d *sensorsImpl) erc20Watcher(tx *rpc.Transaction) (string, error) {
 }
 
 func (d *sensorsImpl) TX(tx *rpc.Transaction, blockNumber int64, blockTime time.Time) error {
-
-	watchers, err := d.getWatchers(tx)
-
-	if err != nil {
-		return err
-	}
-
-	if len(watchers) == 0 {
-		return nil
-	}
-
-	d.DebugF("find watchers(%d) for tx %s", len(watchers), tx.Hash)
 
 	order := &sensors.Order{
 		ID:           "O_" + d.snode.Generate().String(),
@@ -249,6 +237,18 @@ func (d *sensorsImpl) TX(tx *rpc.Transaction, blockNumber int64, blockTime time.
 		GasPrice:     tx.GasPrice,
 		Code:         tx.Input,
 	}
+
+	watchers, err := d.getWatchers(order)
+
+	if err != nil {
+		return err
+	}
+
+	if len(watchers) == 0 {
+		return nil
+	}
+
+	d.DebugF("find watchers(%d) for tx %s", len(watchers), tx.Hash)
 
 	gas, err := fixed.FromHex(tx.Gas, 0)
 
@@ -347,7 +347,7 @@ func (d *sensorsImpl) Block(block *rpc.Block, blockNumber int64, blockTime time.
 	orders := append(timeout, confirmed...)
 
 	for _, order := range orders {
-		watchers, err := d.getWatchers(order.From, order.To)
+		watchers, err := d.getWatchers(order)
 
 		if err != nil {
 			d.ErrorF("notify tx %s completed err: %s", order.TX, err)
