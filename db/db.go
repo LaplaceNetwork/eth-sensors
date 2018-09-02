@@ -5,6 +5,10 @@ import (
 	sensors "github.com/laplacenetwork/eth-sensors"
 )
 
+// Empty .
+type Empty struct {
+}
+
 func init() {
 	orm.RegisterWithName("eth-sensors", func() []interface{} {
 		return []interface{}{
