@@ -11,6 +11,7 @@ import (
 	"github.com/dynamicgo/fixed"
 
 	"github.com/dynamicgo/xorm-decorator"
+	"github.com/openzknetwork/ethgo/erc20"
 	"github.com/openzknetwork/ethgo/rpc"
 	"github.com/openzknetwork/indexer"
 
@@ -167,18 +168,59 @@ func (d *sensorsImpl) fetchHandler(block *rpc.Block) error {
 	return nil
 }
 
-func (d *sensorsImpl) getWatchers(from, to string) ([]*sensors.Watcher, error) {
+func (d *sensorsImpl) getWatchers(tx *rpc.Transaction) ([]*sensors.Watcher, error) {
+
+	to, err := d.erc20Watcher(tx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if to == "" {
+		to = tx.To
+	}
 
 	watchers := make([]*sensors.Watcher, 0)
 
-	err := d.db.Where(`"address" = ? or "address" = ?`, from, to).Find(&watchers)
+	err = d.db.Where(`"address" = ? or "address" = ?`, tx.From, to).Find(&watchers)
 
 	return watchers, err
 }
 
+func (d *sensorsImpl) erc20Watcher(tx *rpc.Transaction) (string, error) {
+
+	watcher := new(sensors.Watcher)
+
+	ok, err := d.db.Where(`"address" = ? and "erc20" = ?`, tx.To, true).Get(watcher)
+
+	if err != nil {
+		return "", err
+	}
+
+	if !ok {
+		return "", nil
+	}
+
+	code := strings.TrimPrefix("0x", tx.Input)
+
+	if !strings.HasPrefix(code, erc20.TransferID) {
+		d.WarnF("check contract %s call, is not a transfer call")
+		return "", nil
+	}
+
+	code = strings.TrimPrefix(code, erc20.TransferID)
+
+	if len(code) != 128 {
+		d.WarnF("handle unknown contract transfer method: %s", tx.Hash)
+		return "", nil
+	}
+
+	return code[24:64], nil
+}
+
 func (d *sensorsImpl) TX(tx *rpc.Transaction, blockNumber int64, blockTime time.Time) error {
 
-	watchers, err := d.getWatchers(tx.From, tx.To)
+	watchers, err := d.getWatchers(tx)
 
 	if err != nil {
 		return err

@@ -58,10 +58,11 @@ func (table *Order) TableName() string {
 
 // Watcher the eth event watcher managed by sensors
 type Watcher struct {
-	ID      string `xorm:"pk"`     // watcher id
-	Name    string `xorm:"index"`  // watcher name
-	Key     string `xorm:"unique"` // watcher unique key provider by notifier
-	Address string `xorm:"index"`  // watched address
+	ID      string `xorm:"pk"`                   // watcher id
+	Name    string `xorm:"index"`                // watcher name
+	Key     string `xorm:"unique"`               // watcher unique key provider by notifier
+	Address string `xorm:"index(address_erc20)"` // watched address
+	ERC20   bool   `xorm:"index(address_erc20)"` // true if the target address is a erc20 contract address
 }
 
 // TableName .
