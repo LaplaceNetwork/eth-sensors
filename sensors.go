@@ -79,14 +79,6 @@ type Sensor interface {
 	List(page orm.Page) ([]*Watcher, int64, error)
 }
 
-func init() {
-	orm.RegisterWithName("eth-sensors", func() []interface{} {
-		return []interface{}{
-			new(Watcher), new(Order),
-		}
-	})
-}
-
 // Notifier the eth tx event notifier
 type Notifier interface {
 	// notify order status changed
