@@ -191,7 +191,7 @@ func (d *sensorsImpl) erc20Watcher(order *sensors.Order) (string, error) {
 
 	watcher := new(sensors.Watcher)
 
-	ok, err := d.db.Where(`"address" = ? and "erc20" = ?`, order.To, true).Get(watcher)
+	ok, err := d.db.Where(`"address" = ? and "e_r_c20" = ?`, order.To, true).Get(watcher)
 
 	if err != nil {
 		return "", err
