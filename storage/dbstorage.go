@@ -2,11 +2,14 @@ package storage
 
 import (
 	config "github.com/dynamicgo/go-config"
+	"github.com/dynamicgo/slf4go"
+	"github.com/dynamicgo/xorm-decorator"
 	"github.com/go-xorm/xorm"
 	sensors "github.com/laplacenetwork/eth-sensors"
 )
 
 type storageImpl struct {
+	slf4go.Logger
 	engine *xorm.Engine
 }
 
@@ -28,6 +31,7 @@ func NewDBStorage(driver, source string) (sensors.OrderStorage, error) {
 	}
 
 	storage := &storageImpl{
+		Logger: slf4go.Get("storage"),
 		engine: engine,
 	}
 
@@ -48,6 +52,12 @@ func (storage *storageImpl) Unconfirmed() ([]*sensors.Order, error) {
 
 func (storage *storageImpl) Save(order *sensors.Order) error {
 	_, err := storage.engine.InsertOne(order)
+
+	if decorator.DuplicateKey(storage.engine, err) {
+		storage.WarnF("save order %s err for duplicate tx %s", order.TX)
+		return nil
+	}
+
 	return err
 }
 

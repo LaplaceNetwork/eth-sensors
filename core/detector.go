@@ -277,6 +277,7 @@ func (d *sensorsImpl) TX(tx *rpc.Transaction, blockNumber int64, blockTime time.
 	}
 
 	if err := d.storage.Save(order); err != nil {
+
 		d.ErrorF("save tx %s order err: %s", tx.Hash, err)
 		return err
 	}
