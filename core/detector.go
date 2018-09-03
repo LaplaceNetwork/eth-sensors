@@ -245,6 +245,7 @@ func (d *sensorsImpl) TX(tx *rpc.Transaction, blockNumber int64, blockTime time.
 	}
 
 	if len(watchers) == 0 {
+		d.DebugF("no watcher for tx %s", tx.Hash)
 		return nil
 	}
 
@@ -314,6 +315,7 @@ func (d *sensorsImpl) recache(timeout, confirmed []*sensors.Order) {
 }
 
 func (d *sensorsImpl) Block(block *rpc.Block, blockNumber int64, blockTime time.Time) error {
+
 	timeout, confirmed := d.cacher.Confirm(blockNumber, blockTime)
 
 	for _, order := range timeout {
