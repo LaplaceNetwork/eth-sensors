@@ -245,7 +245,7 @@ func (d *sensorsImpl) TX(tx *rpc.Transaction, blockNumber int64, blockTime time.
 	}
 
 	if len(watchers) == 0 {
-		d.DebugF("no watcher for tx %s", tx.Hash)
+		// d.DebugF("no watcher for tx %s", tx.Hash)
 		return nil
 	}
 
