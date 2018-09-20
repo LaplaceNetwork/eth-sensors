@@ -191,7 +191,7 @@ func (d *sensorsImpl) erc20Watcher(order *sensors.Order) (string, error) {
 
 	watcher := new(sensors.ERC20)
 
-	ok, err := d.db.Where(`"asset" = ?`, order.To, true).Get(watcher)
+	ok, err := d.db.Where(`"asset" = ?`, order.To).Get(watcher)
 
 	if err != nil {
 		return "", err
