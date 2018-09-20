@@ -189,9 +189,9 @@ func (d *sensorsImpl) getWatchers(order *sensors.Order) ([]*sensors.Watcher, err
 
 func (d *sensorsImpl) erc20Watcher(order *sensors.Order) (string, error) {
 
-	watcher := new(sensors.Watcher)
+	watcher := new(sensors.ERC20)
 
-	ok, err := d.db.Where(`"address" = ? and "e_r_c20" = ?`, order.To, true).Get(watcher)
+	ok, err := d.db.Where(`"asset" = ?`, order.To, true).Get(watcher)
 
 	if err != nil {
 		return "", err
@@ -200,6 +200,8 @@ func (d *sensorsImpl) erc20Watcher(order *sensors.Order) (string, error) {
 	if !ok {
 		return "", nil
 	}
+
+	d.DebugF("find erc20 call %s", order.TX)
 
 	code := strings.TrimPrefix("0x", order.Code)
 

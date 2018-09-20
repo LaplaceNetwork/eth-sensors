@@ -12,7 +12,7 @@ type Empty struct {
 func init() {
 	orm.RegisterWithName("eth-sensors", func() []interface{} {
 		return []interface{}{
-			new(sensors.Watcher), new(sensors.Order),
+			new(sensors.Watcher), new(sensors.Order), new(sensors.ERC20),
 		}
 	})
 }
