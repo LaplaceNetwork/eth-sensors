@@ -368,6 +368,8 @@ func (d *sensorsImpl) Block(block *rpc.Block, blockNumber int64, blockTime time.
 			return err
 		}
 
+		d.DebugF("find watchers(%d) for tx %s to notify", len(watchers), order.TX)
+
 		for _, watcher := range watchers {
 			if err := d.notifier.Notify(watcher, order); err != nil {
 				d.ErrorF("notify tx %s completed err: %s", order.TX, err)
