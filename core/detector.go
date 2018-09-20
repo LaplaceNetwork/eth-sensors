@@ -240,6 +240,8 @@ func (d *sensorsImpl) TX(tx *rpc.Transaction, blockNumber int64, blockTime time.
 		Code:         tx.Input,
 	}
 
+	d.DebugF("try get tx %s watcher", order.TX)
+
 	watchers, err := d.getWatchers(order)
 
 	if err != nil {
