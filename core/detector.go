@@ -280,6 +280,7 @@ func (d *sensorsImpl) TX(tx *rpc.Transaction, blockNumber int64, blockTime time.
 	order.GasLimits = fixed.FromBigInteger(gasLimits, 0).HexValue()
 
 	for _, watcher := range watchers {
+		d.DebugF("notify watcher %s for tx %s", watcher.Address, tx.Hash)
 		if err := d.notifier.Notify(watcher, order); err != nil {
 			d.ErrorF("notify tx %s order to watcher %s err: %s", tx.Hash, watcher.Key, err)
 			return err
