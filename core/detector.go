@@ -182,6 +182,8 @@ func (d *sensorsImpl) getWatchers(order *sensors.Order) ([]*sensors.Watcher, err
 
 	watchers := make([]*sensors.Watcher, 0)
 
+	d.DebugF("find watcher for %s or %s", order.From, order.To)
+
 	err = d.db.Where(`"address" = ? or "address" = ?`, order.From, to).Find(&watchers)
 
 	return watchers, err
@@ -217,7 +219,11 @@ func (d *sensorsImpl) erc20Watcher(order *sensors.Order) (string, error) {
 		return "", nil
 	}
 
-	return code[24:64], nil
+	to := "0x" + code[24:64]
+
+	d.DebugF("erc20 %s transfer to %s", order.TX, to)
+
+	return to, nil
 }
 
 func (d *sensorsImpl) TX(tx *rpc.Transaction, blockNumber int64, blockTime time.Time) error {
