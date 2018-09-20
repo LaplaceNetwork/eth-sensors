@@ -203,7 +203,7 @@ func (d *sensorsImpl) erc20Watcher(order *sensors.Order) (string, error) {
 
 	d.DebugF("find erc20 call %s", order.TX)
 
-	code := strings.TrimPrefix("0x", order.Code)
+	code := strings.TrimPrefix(order.Code, "0x")
 
 	if !strings.HasPrefix(code, erc20.TransferID) {
 		d.WarnF("check contract %s call %s, is not a transfer call, %s", order.To, order.TX, code)
