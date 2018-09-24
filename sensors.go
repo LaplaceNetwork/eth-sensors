@@ -58,13 +58,14 @@ func (table *Order) TableName() string {
 
 // ERC20 .
 type ERC20 struct {
-	ID         string    `xorm:"pk" json:"id"`
-	Asset      string    `xorm:"unique" json:"asset"`
-	Name       string    `xorm:"index" json:"name"`
-	Symbol     string    `xorm:"unique" json:"symbol"`
-	Decimals   int       `xorm:"" json:"decimals"`
-	CreateTime time.Time `xorm:"created" json:"createtime"`
-	UpdateTime time.Time `xorm:"updated" json:"updatetime"`
+	ID          string    `xorm:"pk" json:"id"`
+	Asset       string    `xorm:"unique" json:"asset"`
+	Name        string    `xorm:"index" json:"name"`
+	Symbol      string    `xorm:"unique" json:"symbol"`
+	Decimals    int       `xorm:"" json:"decimals"`
+	MiniDeposit string    `xorm:"" json:"minideposit"`
+	CreateTime  time.Time `xorm:"created" json:"createtime"`
+	UpdateTime  time.Time `xorm:"updated" json:"updatetime"`
 }
 
 // TableName .
