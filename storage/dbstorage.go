@@ -62,15 +62,15 @@ func (storage *storageImpl) Save(order *sensors.Order) error {
 }
 
 func (storage *storageImpl) Update(order *sensors.Order) error {
-	affected, err := storage.engine.Where(`"i_d" = ?`, order.ID).Update(order)
+	_, err := storage.engine.Where(`"i_d" = ?`, order.ID).Update(order)
 
 	if err != nil {
 		return err
 	}
 
-	if affected == 0 {
-		return sensors.ErrVersion
-	}
+	// if affected == 0 {
+	// 	return sensors.ErrVersion
+	// }
 
 	return nil
 }
