@@ -56,30 +56,13 @@ func (table *Order) TableName() string {
 	return "eth_sensors_order"
 }
 
-// ERC20 .
-type ERC20 struct {
-	ID          string    `xorm:"pk" json:"id"`
-	Asset       string    `xorm:"unique" json:"asset"`
-	Name        string    `xorm:"index" json:"name"`
-	Symbol      string    `xorm:"unique" json:"symbol"`
-	Decimals    int       `xorm:"" json:"decimals"`
-	MiniDeposit string    `xorm:"" json:"minideposit"`
-	CreateTime  time.Time `xorm:"created" json:"createtime"`
-	UpdateTime  time.Time `xorm:"updated" json:"updatetime"`
-}
-
-// TableName .
-func (table *ERC20) TableName() string {
-	return "eth_sidecar_erc20"
-}
-
 // Watcher the eth event watcher managed by sensors
 type Watcher struct {
-	ID      string `xorm:"pk"`                   // watcher id
-	Name    string `xorm:"index"`                // watcher name
-	Key     string `xorm:"unique"`               // watcher unique key provider by notifier
-	Address string `xorm:"index(address_erc20)"` // watched address
-	ERC20   bool   `xorm:"index(address_erc20)"` // true if the target address is a erc20 contract address
+	ID      string `xorm:"pk"`                    // watcher id
+	Name    string `xorm:"index"`                 // watcher name
+	Key     string `xorm:"unique"`                // watcher unique key provider by notifier
+	Address string `xorm:"unique(address_erc20)"` // watched address
+	ERC20   bool   `xorm:"unique(address_erc20)"` // true if the target address is a erc20 contract address
 }
 
 // TableName .

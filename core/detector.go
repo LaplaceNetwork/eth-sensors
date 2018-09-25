@@ -182,18 +182,23 @@ func (d *sensorsImpl) getWatchers(order *sensors.Order) ([]*sensors.Watcher, err
 
 	watchers := make([]*sensors.Watcher, 0)
 
-	d.DebugF("find watcher for %s or %s", order.From, order.To)
+	d.DebugF("find watcher for %s or %s", order.From, to)
 
 	err = d.db.Where(`"address" = ? or "address" = ?`, order.From, to).Find(&watchers)
 
-	return watchers, err
+	if err != nil {
+		d.DebugF("find watcher for %s or %s err: %s", order.From, to, err)
+		return nil, err
+	}
+
+	return watchers, nil
 }
 
 func (d *sensorsImpl) erc20Watcher(order *sensors.Order) (string, error) {
 
-	watcher := new(sensors.ERC20)
+	watcher := new(sensors.Watcher)
 
-	ok, err := d.db.Where(`"asset" = ?`, order.To).Get(watcher)
+	ok, err := d.db.Where(`"address" = ? and "erc20" = ?`, order.To, true).Get(watcher)
 
 	if err != nil {
 		return "", err
@@ -277,7 +282,7 @@ func (d *sensorsImpl) TX(tx *rpc.Transaction, blockNumber int64, blockTime time.
 
 	gasLimits := new(big.Int).Quo(gas.ValueBigInteger(), gasPrice.ValueBigInteger())
 
-	order.GasLimits = fixed.FromBigInteger(gasLimits, 0).HexValue()
+	order.GasLimits = fixed.NewWithBigint(gasLimits, 0).HexValue()
 
 	d.DebugF("notify watchers(%d) for tx %s", len(watchers), tx.Hash)
 
