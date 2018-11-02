@@ -184,7 +184,7 @@ func (d *sensorsImpl) getWatchers(order *sensors.Order) ([]*sensors.Watcher, err
 
 	d.DebugF("find watcher for %s or %s", order.From, to)
 
-	err = d.db.Where(`"address" = ? or "address" = ?`, order.From, to).Find(&watchers)
+	err = d.db.Where(`("address" = ? or "address" = ?) and "e_r_c20" = ?`, order.From, to, false).Find(&watchers)
 
 	if err != nil {
 		d.DebugF("find watcher for %s or %s err: %s", order.From, to, err)
